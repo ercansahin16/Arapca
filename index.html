@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#667eea">
-    <title>📚 Arapça Tefsir - Kelime Öğrenme</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQXJhcMOnYSBUZWZzaXIiLCJzaG9ydF9uYW1lIjoiVGVmc2lyIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiM2NjdlZWEiLCJ0aGVtZV9jb2xvciI6IiM2NjdlZWEifQ==">
+    <title>📚 Arapça-Türkçe Sözlük & Tefsir</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
     <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <style>
         :root {
@@ -15,6 +14,7 @@
             --success: #11998e;
             --danger: #fc466b;
             --warning: #f093fb;
+            --info: #4facfe;
             --dark: #2c3e50;
             --light: #f8f9fa;
             --shadow: 0 10px 40px rgba(0,0,0,0.2);
@@ -32,7 +32,7 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             min-height: 100vh;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
             color: var(--dark);
         }
 
@@ -40,7 +40,7 @@
         .header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
-            padding: 20px;
+            padding: 15px 20px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -49,77 +49,258 @@
 
         .header h1 {
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.3em;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+        /* Dictionary Hero Section */
+        .dictionary-hero {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+            margin: 20px;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
+        .dictionary-hero::before {
+            content: '☪';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            font-size: 8em;
+            opacity: 0.05;
             color: var(--primary);
         }
 
-        .stat-label {
-            font-size: 0.8em;
-            color: #666;
-        }
-
-        /* Container */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Navigation */
-        .nav-tabs {
+        .search-toggle {
             display: flex;
-            gap: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 50px;
+            padding: 5px;
             margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
         }
 
-        .nav-tab {
+        .toggle-btn {
             flex: 1;
-            min-width: 80px;
-            background: rgba(255,255,255,0.2);
+            padding: 12px;
             border: none;
-            padding: 15px 10px;
-            border-radius: 15px;
-            color: white;
-            font-size: 0.9em;
+            border-radius: 50px;
+            background: transparent;
+            color: var(--dark);
+            font-size: 0.95em;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-box-large {
+            position: relative;
+        }
+
+        .search-input-large {
+            width: 100%;
+            padding: 20px 60px 20px 25px;
+            border: 3px solid transparent;
+            border-radius: var(--radius);
+            font-size: 1.3em;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .search-input-large:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 5px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-input-large.arabic-input {
+            font-size: 1.8em;
+            text-align: right;
+            direction: rtl;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Virtual Keyboard */
+        .virtual-keyboard {
+            background: white;
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .virtual-keyboard.active {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .key {
+            min-width: 35px;
+            height: 45px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: var(--dark);
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+        }
+
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .key:active {
+            transform: translateY(0);
+        }
+
+        .key.wide {
+            min-width: 80px;
+            background: var(--primary);
+            color: white;
+        }
+
+        .key.space {
+            min-width: 150px;
+        }
+
+        /* Search Results */
+        .search-results {
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-right: 5px solid var(--primary);
+            animation: fadeIn 0.5s;
+            position: relative;
+        }
+
+        .result-arabic {
+            font-size: 2.5em;
+            color: var(--dark);
+            text-align: right;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .result-turkish {
+            font-size: 1.3em;
+            color: #555;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .nav-tab.active {
-            background: white;
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+
+        .btn-small:hover {
+            transform: scale(1.05);
         }
 
-        .nav-tab i {
-            font-size: 1.5em;
+        /* Not Found */
+        .not-found {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .not-found-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .add-suggestion {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 20px;
         }
 
         /* Sections */
@@ -147,15 +328,15 @@
         }
 
         .card-title {
-            font-size: 1.3em;
-            margin-bottom: 15px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
             color: var(--dark);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* Upload Area */
+        /* Upload */
         .upload-zone {
             border: 3px dashed var(--primary);
             border-radius: var(--radius);
@@ -166,22 +347,16 @@
             cursor: pointer;
         }
 
-        .upload-zone:hover, .upload-zone.dragover {
+        .upload-zone:hover {
             border-color: var(--secondary);
-            background: #e8ecff;
             transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
         }
 
         .btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 15px 30px;
             border-radius: 25px;
             font-size: 1em;
             cursor: pointer;
@@ -193,83 +368,11 @@
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #38ef7d);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger), #3f5efb);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning), #f5576c);
-        }
-
-        /* Camera */
-        .camera-container {
-            position: relative;
-            display: none;
-            margin-top: 20px;
-        }
-
-        #video {
-            width: 100%;
-            max-width: 400px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-
-        .camera-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 150px;
-            border: 2px solid white;
-            border-radius: 10px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 1.1em;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-input.arabic {
-            font-size: 1.5em;
-            text-align: right;
-            direction: rtl;
-        }
-
-        /* Word Cards */
+        /* Word List */
         .word-grid {
             display: grid;
             gap: 15px;
@@ -283,48 +386,28 @@
             grid-template-columns: 1fr auto;
             gap: 15px;
             align-items: center;
-            transition: all 0.3s;
             border-right: 5px solid var(--primary);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s;
         }
 
         .word-item:hover {
             transform: translateX(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .word-content {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
         }
 
         .word-arabic {
-            font-size: 2em;
+            font-size: 1.8em;
             color: var(--dark);
-            font-weight: bold;
             text-align: right;
-            line-height: 1.4;
         }
 
         .word-turkish {
             color: #666;
-            font-size: 1.1em;
-            padding: 8px 12px;
-            background: white;
-            border-radius: 8px;
-            display: inline-block;
-        }
-
-        .word-meta {
-            font-size: 0.8em;
-            color: #999;
+            font-size: 1em;
+            margin-top: 5px;
         }
 
         .word-actions {
             display: flex;
-            flex-direction: column;
             gap: 8px;
         }
 
@@ -334,10 +417,7 @@
             border-radius: 10px;
             border: none;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
+            font-size: 1.1em;
             transition: all 0.2s;
         }
 
@@ -345,20 +425,37 @@
             transform: scale(1.1);
         }
 
-        .btn-edit { background: #3498db; color: white; }
-        .btn-delete { background: #e74c3c; color: white; }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: white;
+        /* OCR Preview */
+        .ocr-preview {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
         }
 
-        .empty-icon {
-            font-size: 5em;
-            margin-bottom: 20px;
-            opacity: 0.5;
+        .ocr-line {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ocr-line:hover {
+            border-right-color: var(--primary);
+            background: #e8ecff;
+        }
+
+        .ocr-line.selected {
+            background: var(--primary);
+            color: white;
         }
 
         /* Progress */
@@ -386,12 +483,11 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             width: 0%;
             transition: width 0.3s;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-size: 0.8em;
-            font-weight: bold;
         }
 
         /* Modal */
@@ -407,7 +503,6 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            backdrop-filter: blur(5px);
         }
 
         .modal.active {
@@ -457,7 +552,38 @@
             color: #999;
         }
 
-        /* Toast Notifications */
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-input.arabic {
+            font-size: 1.5em;
+            text-align: right;
+            direction: rtl;
+        }
+
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 100px;
@@ -467,13 +593,9 @@
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
-            box-shadow: var(--shadow);
             opacity: 0;
             transition: all 0.3s;
             z-index: 2000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .toast.show {
@@ -481,10 +603,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-
-        /* Bottom Navigation */
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -513,96 +632,90 @@
             background: rgba(102, 126, 234, 0.1);
         }
 
-        .nav-item i {
+        .nav-item span:first-child {
             display: block;
-            font-size: 1.5em;
-            margin-bottom: 5px;
+            font-size: 1.4em;
+            margin-bottom: 3px;
         }
 
-        .nav-item span {
+        .nav-item span:last-child {
             font-size: 0.75em;
         }
 
-        /* JSON Output */
-        .json-preview {
-            background: #2c3e50;
-            color: #2ecc71;
-            padding: 20px;
-            border-radius: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            overflow-x: auto;
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        /* Search */
-        .search-box {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 15px 20px 15px 50px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1em;
-            box-shadow: var(--shadow);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2em;
-        }
-
-        /* Filter Tags */
-        .filter-tags {
+        /* History */
+        .history-tags {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
         }
 
-        .tag {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
+        .history-tag {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+            padding: 8px 15px;
             border-radius: 20px;
+            font-size: 0.9em;
             cursor: pointer;
             transition: all 0.3s;
             border: none;
-            font-size: 0.9em;
         }
 
-        .tag.active {
-            background: white;
-            color: var(--primary);
+        .history-tag:hover {
+            background: var(--primary);
+            color: white;
         }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Camera */
+        .camera-container {
+            display: none;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: var(--radius);
+        }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .hidden { display: none !important; }
 
         /* Responsive */
         @media (max-width: 600px) {
-            .word-item {
-                grid-template-columns: 1fr;
+            .key {
+                min-width: 30px;
+                height: 40px;
+                font-size: 1.1em;
             }
             
-            .word-actions {
-                flex-direction: row;
-                justify-content: flex-end;
+            .result-arabic {
+                font-size: 2em;
             }
         }
 
-        /* Loading Spinner */
+        /* Loading */
         .spinner {
             width: 50px;
             height: 50px;
             border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: white;
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 20px auto;
@@ -611,192 +724,131 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* OCR Preview */
-        .ocr-preview {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .ocr-line {
-            padding: 10px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-right: 3px solid transparent;
-        }
-
-        .ocr-line:hover {
-            border-right-color: var(--primary);
-            background: #e8ecff;
-        }
-
-        .ocr-line.selected {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Quiz Mode */
-        .quiz-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 40px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .quiz-arabic {
-            font-size: 3em;
-            margin-bottom: 30px;
-            color: var(--dark);
-        }
-
-        .quiz-options {
-            display: grid;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .quiz-option {
-            padding: 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .quiz-option:hover {
-            border-color: var(--primary);
-            background: #f0f4ff;
-        }
-
-        .quiz-option.correct {
-            background: #d4edda;
-            border-color: var(--success);
-        }
-
-        .quiz-option.wrong {
-            background: #f8d7da;
-            border-color: var(--danger);
-        }
-
-        /* Hide file input */
-        input[type="file"] {
-            display: none;
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        /* Selection color */
-        ::selection {
-            background: var(--primary);
-            color: white;
-        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
-        <h1>📚 Arapça Tefsir Öğrenme</h1>
-        <div class="stats-bar">
-            <div class="stat">
-                <div class="stat-value" id="totalCount">0</div>
-                <div class="stat-label">Toplam Kelime</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="todayCount">0</div>
-                <div class="stat-label">Bugün Eklenen</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="quizScore">0%</div>
-                <div class="stat-label">Quiz Başarısı</div>
-            </div>
-        </div>
+        <h1>📖 Arapça-Türkçe Sözlük</h1>
     </div>
 
-    <div class="container">
-        <!-- Search (sadece liste görünümünde) -->
-        <div class="search-box" id="searchContainer" style="display:none;">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="searchInput" placeholder="Kelime ara..." oninput="searchWords()">
+    <!-- DICTIONARY SECTION (Always Visible on Top) -->
+    <div class="dictionary-hero">
+        <!-- Search Toggle -->
+        <div class="search-toggle">
+            <button class="toggle-btn active" onclick="setSearchMode('tr-to-ar')" id="btn-tr-to-ar">
+                <span>🇹🇷</span> Türkçe → Arapça
+            </button>
+            <button class="toggle-btn" onclick="setSearchMode('ar-to-tr')" id="btn-ar-to-tr">
+                <span>🇸🇦</span> Arapça → Türkçe
+            </button>
         </div>
 
-        <!-- Filter Tags -->
-        <div class="filter-tags" id="filterContainer" style="display:none;">
-            <button class="tag active" onclick="filterWords('all')">Tümü</button>
-            <button class="tag" onclick="filterWords('today')">Bugün</button>
-            <button class="tag" onclick="filterWords('week')">Bu Hafta</button>
+        <!-- Search Input -->
+        <div class="search-box-large">
+            <input type="text" 
+                   class="search-input-large" 
+                   id="dictInput" 
+                   placeholder="Türkçe kelime yazın..."
+                   oninput="handleDictionaryInput()"
+                   onfocus="onInputFocus()">
+            <button class="search-btn" onclick="searchDictionary()">🔍</button>
         </div>
 
-        <!-- Progress -->
-        <div class="progress-container" id="progressContainer">
-            <h3>🔄 Görüntü İşleniyor...</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar">0%</div>
+        <!-- Virtual Keyboard -->
+        <div class="virtual-keyboard" id="virtualKeyboard">
+            <div class="keyboard-row">
+                <button class="key" onclick="typeKey('ض')">ض</button>
+                <button class="key" onclick="typeKey('ص')">ص</button>
+                <button class="key" onclick="typeKey('ث')">ث</button>
+                <button class="key" onclick="typeKey('ق')">ق</button>
+                <button class="key" onclick="typeKey('ف')">ف</button>
+                <button class="key" onclick="typeKey('غ')">غ</button>
+                <button class="key" onclick="typeKey('ع')">ع</button>
+                <button class="key" onclick="typeKey('ه')">ه</button>
+                <button class="key" onclick="typeKey('خ')">خ</button>
+                <button class="key" onclick="typeKey('ح')">ح</button>
+                <button class="key" onclick="typeKey('ج')">ج</button>
+                <button class="key" onclick="typeKey('د')">د</button>
             </div>
-            <p id="progressText">Lütfen bekleyin...</p>
+            <div class="keyboard-row">
+                <button class="key" onclick="typeKey('ش')">ش</button>
+                <button class="key" onclick="typeKey('س')">س</button>
+                <button class="key" onclick="typeKey('ي')">ي</button>
+                <button class="key" onclick="typeKey('ب')">ب</button>
+                <button class="key" onclick="typeKey('ل')">ل</button>
+                <button class="key" onclick="typeKey('ا')">ا</button>
+                <button class="key" onclick="typeKey('ت')">ت</button>
+                <button class="key" onclick="typeKey('ن')">ن</button>
+                <button class="key" onclick="typeKey('م')">م</button>
+                <button class="key" onclick="typeKey('ك')">ك</button>
+                <button class="key" onclick="typeKey('ط')">ط</button>
+                <button class="key" onclick="typeKey('ذ')">ذ</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key" onclick="typeKey('ئ')">ئ</button>
+                <button class="key" onclick="typeKey('ء')">ء</button>
+                <button class="key" onclick="typeKey('ؤ')">ؤ</button>
+                <button class="key" onclick="typeKey('ر')">ر</button>
+                <button class="key" onclick="typeKey('ى')">ى</button>
+                <button class="key" onclick="typeKey('ة')">ة</button>
+                <button class="key" onclick="typeKey('و')">و</button>
+                <button class="key" onclick="typeKey('ز')">ز</button>
+                <button class="key" onclick="typeKey('ظ')">ظ</button>
+                <button class="key" onclick="typeKey('ّ')">ّ</button>
+                <button class="key" onclick="typeKey('َ')">َ</button>
+                <button class="key" onclick="typeKey('ُ')">ُ</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key wide" onclick="typeKey(' ')">Boşluk</button>
+                <button class="key wide" onclick="backspace()">⌫ Sil</button>
+                <button class="key wide" onclick="clearInput()">✕ Temizle</button>
+                <button class="key wide" onclick="toggleKeyboard()" style="background:var(--danger);color:white;">↓ Gizle</button>
+            </div>
         </div>
 
-        <!-- Sections -->
-        
-        <!-- 1. OCR / Upload Section -->
-        <div class="section active" id="section-upload">
+        <!-- Quick History -->
+        <div class="history-tags" id="quickHistory"></div>
+
+        <!-- Search Results -->
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- OCR Section -->
+        <div class="section active" id="section-ocr">
             <div class="card">
                 <h2 class="card-title">📷 Resimden Kelime Ekle</h2>
                 
-                <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <div class="upload-icon">📸</div>
-                    <h3>Fotoğraf Yükle</h3>
-                    <p>veya sürükle-bırak yapın</p>
-                    <br>
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size:3em;margin-bottom:15px;">📸</div>
+                    <h3>Fotoğraf Yükle veya Sürükle</h3>
+                    <p style="color:#666;margin:10px 0;">Kitabınızdan fotoğraf çekin</p>
                     <button class="btn" onclick="event.stopPropagation()">📁 Dosya Seç</button>
-                    <button class="btn btn-warning" onclick="event.stopPropagation(); startCamera()">📷 Kamera</button>
+                    <button class="btn" style="background:linear-gradient(135deg, var(--warning), var(--danger));" 
+                            onclick="event.stopPropagation(); startCamera()">📷 Kamera</button>
                 </div>
 
-                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
 
                 <!-- Camera -->
                 <div class="camera-container" id="cameraContainer">
                     <video id="video" autoplay playsinline></video>
-                    <div class="camera-overlay"></div>
-                    <br>
-                    <button class="btn btn-success" onclick="capturePhoto()">📸 Fotoğraf Çek</button>
-                    <button class="btn btn-danger" onclick="stopCamera()">❌ İptal</button>
+                    <div style="margin-top:15px;">
+                        <button class="btn btn-success" onclick="capturePhoto()">📸 Çek</button>
+                        <button class="btn" style="background:#666;" onclick="stopCamera()">❌ Kapat</button>
+                    </div>
                 </div>
 
                 <!-- OCR Preview -->
                 <div class="ocr-preview" id="ocrPreview" style="display:none;">
-                    <h4>🔍 Tespit Edilen Metinler:</h4>
-                    <p style="color:#666; font-size:0.9em; margin-bottom:10px;">Doğru satırları seçin:</p>
+                    <h4>🔍 Tespit Edilenler (Doğru olanları seçin):</h4>
                     <div id="ocrLines"></div>
-                    <br>
-                    <button class="btn btn-success" onclick="addSelectedLines()">✅ Seçilenleri Ekle</button>
-                    <button class="btn" onclick="skipOCR()">⏭️ Atla</button>
+                    <div class="mt-20">
+                        <button class="btn btn-success" onclick="addSelectedOCR()">✅ Ekle</button>
+                        <button class="btn" onclick="skipOCR()">⏭️ Atla</button>
+                    </div>
                 </div>
             </div>
 
@@ -804,66 +856,40 @@
             <div class="card">
                 <h2 class="card-title">✏️ Manuel Ekle</h2>
                 <div class="form-group">
-                    <label class="form-label">Arapça Kelime</label>
+                    <label class="form-label">Arapça</label>
                     <input type="text" class="form-input arabic" id="manualArabic" placeholder="مثال" dir="rtl">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Türkçe Anlamı</label>
-                    <input type="text" class="form-input" id="manualTurkish" placeholder="örnek, misal">
+                    <input type="text" class="form-input" id="manualTurkish" placeholder="örnek">
                 </div>
-                <button class="btn btn-success" onclick="addManualWord()" style="width:100%; justify-content:center;">
-                    ➕ Kelime Ekle
+                <button class="btn btn-success" style="width:100%;justify-content:center;" onclick="addManual()">
+                    ➕ Sözlüğe Ekle
                 </button>
             </div>
         </div>
 
-        <!-- 2. List Section -->
+        <!-- List Section -->
         <div class="section" id="section-list">
-            <div class="card" id="wordsCard">
-                <h2 class="card-title">📋 Kelimelerim</h2>
-                <div class="word-grid" id="wordList">
-                    <!-- Words will be inserted here -->
+            <div class="card">
+                <h2 class="card-title">📚 Sözlüğüm (<span id="wordCount">0</span> kelime)</h2>
+                <div class="word-grid" id="wordList"></div>
+                
+                <div class="empty-state" id="emptyList" style="display:none;color:#666;">
+                    <div class="empty-icon">📭</div>
+                    <p>Henüz kelime eklenmemiş</p>
                 </div>
             </div>
-            
-            <div class="empty-state" id="emptyState" style="display:none;">
-                <div class="empty-icon">📭</div>
-                <h3>Henüz kelime eklenmemiş</h3>
-                <p>Yukarıdan kelime eklemeye başlayın</p>
-            </div>
         </div>
 
-        <!-- 3. Quiz Section -->
-        <div class="section" id="section-quiz">
-            <div class="quiz-card" id="quizCard">
-                <h2>🎯 Quiz Modu</h2>
-                <p style="color:#666; margin:20px;">Öğrendiğin kelimeleri test et!</p>
-                <button class="btn btn-success" onclick="startQuiz()" style="font-size:1.2em; padding:15px 40px;">
-                    🚀 Başla
-                </button>
-            </div>
-        </div>
-
-        <!-- 4. JSON/Data Section -->
+        <!-- Data Section -->
         <div class="section" id="section-data">
             <div class="card">
-                <h2 class="card-title">💾 Veri Yönetimi</h2>
-                
-                <h4 style="margin:20px 0 10px;">📤 Dışa Aktar</h4>
-                <button class="btn" onclick="exportJSON()">⬇️ JSON İndir</button>
-                <button class="btn btn-success" onclick="exportCSV()">📊 CSV İndir</button>
-                
-                <h4 style="margin:20px 0 10px;">📥 İçe Aktar</h4>
-                <input type="file" id="importInput" accept=".json,.csv" onchange="importFile(event)">
-                <button class="btn btn-warning" onclick="document.getElementById('importInput').click()">📁 Dosya Yükle</button>
-                
-                <h4 style="margin:20px 0 10px;">⚠️ Tehlikeli Bölge</h4>
-                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Tüm Verileri Sil</button>
-            </div>
-
-            <div class="card">
-                <h2 class="card-title">📄 JSON Önizleme</h2>
-                <div class="json-preview" id="jsonPreview">[]</div>
+                <h2 class="card-title">💾 Yedekleme</h2>
+                <button class="btn" onclick="exportData()">⬇️ JSON İndir</button>
+                <button class="btn btn-success" onclick="document.getElementById('importFile').click()">⬆️ JSON Yükle</button>
+                <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+                <button class="btn" style="background:var(--danger);margin-top:10px;" onclick="clearAll()">🗑️ Tümünü Sil</button>
             </div>
         </div>
     </div>
@@ -872,7 +898,7 @@
     <div class="modal" id="editModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>✏️ Kelimeyi Düzenle</h3>
+                <h3>✏️ Düzenle</h3>
                 <button class="close-btn" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
@@ -881,13 +907,13 @@
                     <input type="text" class="form-input arabic" id="editArabic" dir="rtl">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Türkçe Anlamı</label>
+                    <label class="form-label">Türkçe</label>
                     <input type="text" class="form-input" id="editTurkish">
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn" onclick="closeModal()">İptal</button>
-                <button class="btn btn-success" onclick="saveEdit()">💾 Kaydet</button>
+                <button class="btn btn-success" onclick="saveEdit()">Kaydet</button>
             </div>
         </div>
     </div>
@@ -895,138 +921,429 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <!-- Bottom Navigation -->
+    <!-- Bottom Nav -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="showSection('upload')">
+        <div class="nav-item active" onclick="showSection('ocr')">
             <span>📷</span>
             <span>Ekle</span>
         </div>
         <div class="nav-item" onclick="showSection('list')">
-            <span>📋</span>
-            <span>Listem</span>
-        </div>
-        <div class="nav-item" onclick="showSection('quiz')">
-            <span>🎯</span>
-            <span>Quiz</span>
+            <span>📚</span>
+            <span>Sözlüğüm</span>
         </div>
         <div class="nav-item" onclick="showSection('data')">
             <span>💾</span>
-            <span>Veri</span>
+            <span>Yedek</span>
         </div>
     </div>
 
     <script>
-        // ==================== STATE MANAGEMENT ====================
-        let words = JSON.parse(localStorage.getItem('tefsirWords')) || [];
-        let currentEditId = null;
-        let ocrResults = [];
-        let selectedOCRLines = new Set();
+        // ==================== STATE ====================
+        let dictionary = JSON.parse(localStorage.getItem('tefsirDictionary')) || [];
+        let searchMode = 'tr-to-ar'; // 'tr-to-ar' or 'ar-to-tr'
+        let ocrLines = [];
+        let selectedOCR = new Set();
+        let editingId = null;
         let stream = null;
-        let quizCurrent = null;
-        let quizStats = { correct: 0, total: 0 };
+        let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
 
-        // ==================== INITIALIZATION ====================
-        document.addEventListener('DOMContentLoaded', () => {
-            updateStats();
-            renderWords();
-            updateJSONPreview();
+        // ==================== DICTIONARY FUNCTIONS ====================
+        
+        function setSearchMode(mode) {
+            searchMode = mode;
+            const input = document.getElementById('dictInput');
+            const keyboard = document.getElementById('virtualKeyboard');
             
-            // Check for today count
-            const today = new Date().toDateString();
-            const todayWords = words.filter(w => new Date(w.date).toDateString() === today);
-            document.getElementById('todayCount').textContent = todayWords.length;
-        });
-
-        // ==================== NAVIGATION ====================
-        function showSection(section) {
-            // Update nav
-            document.querySelectorAll('.nav-item').forEach((item, idx) => {
-                item.classList.remove('active');
-                if ((section === 'upload' && idx === 0) ||
-                    (section === 'list' && idx === 1) ||
-                    (section === 'quiz' && idx === 2) ||
-                    (section === 'data' && idx === 3)) {
-                    item.classList.add('active');
-                }
-            });
-
-            // Update sections
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`section-${section}`).classList.add('active');
-
-            // Show/hide search
-            const searchContainer = document.getElementById('searchContainer');
-            const filterContainer = document.getElementById('filterContainer');
+            // Update buttons
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${mode}`).classList.add('active');
             
-            if (section === 'list') {
-                searchContainer.style.display = 'block';
-                filterContainer.style.display = 'flex';
-                renderWords();
+            // Update input
+            if (mode === 'ar-to-tr') {
+                input.classList.add('arabic-input');
+                input.placeholder = 'مثال yazın...';
+                input.setAttribute('dir', 'rtl');
+                keyboard.classList.add('active');
+                // Prevent mobile keyboard
+                input.setAttribute('readonly', 'readonly');
             } else {
-                searchContainer.style.display = 'none';
-                filterContainer.style.display = 'none';
+                input.classList.remove('arabic-input');
+                input.placeholder = 'Türkçe kelime yazın...';
+                input.setAttribute('dir', 'ltr');
+                keyboard.classList.remove('active');
+                input.removeAttribute('readonly');
             }
+            
+            input.value = '';
+            input.focus();
+            document.getElementById('searchResults').innerHTML = '';
+        }
 
-            // Update data preview
-            if (section === 'data') {
-                updateJSONPreview();
+        function onInputFocus() {
+            if (searchMode === 'ar-to-tr') {
+                document.getElementById('virtualKeyboard').classList.add('active');
             }
         }
 
-        // ==================== FILE & CAMERA HANDLING ====================
-        function handleFileSelect(event) {
+        function toggleKeyboard() {
+            document.getElementById('virtualKeyboard').classList.toggle('active');
+        }
+
+        function typeKey(char) {
+            const input = document.getElementById('dictInput');
+            input.value += char;
+            handleDictionaryInput();
+            input.focus();
+        }
+
+        function backspace() {
+            const input = document.getElementById('dictInput');
+            input.value = input.value.slice(0, -1);
+            handleDictionaryInput();
+            input.focus();
+        }
+
+        function clearInput() {
+            document.getElementById('dictInput').value = '';
+            handleDictionaryInput();
+        }
+
+        function handleDictionaryInput() {
+            const query = document.getElementById('dictInput').value.trim();
+            if (query.length === 0) {
+                document.getElementById('searchResults').innerHTML = '';
+                return;
+            }
+            
+            // Real-time search for 3+ characters
+            if (query.length >= 2) {
+                searchDictionary();
+            }
+        }
+
+        function searchDictionary() {
+            const query = document.getElementById('dictInput').value.trim().toLowerCase();
+            if (!query) return;
+            
+            let results = [];
+            
+            if (searchMode === 'tr-to-ar') {
+                // Turkish to Arabic
+                results = dictionary.filter(w => 
+                    w.turkish.toLowerCase().includes(query) ||
+                    w.turkish.split(',').some(s => s.trim().toLowerCase().includes(query))
+                );
+            } else {
+                // Arabic to Turkish
+                results = dictionary.filter(w => 
+                    w.arabic.includes(query) ||
+                    w.arabic.replace(/[\u064B-\u065F\u0670]/g, '').includes(query)
+                );
+            }
+            
+            // Add to history
+            if (!searchHistory.includes(query)) {
+                searchHistory.unshift(query);
+                if (searchHistory.length > 5) searchHistory.pop();
+                localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+                renderHistory();
+            }
+            
+            renderResults(results, query);
+        }
+
+        function renderResults(results, query) {
+            const container = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="not-found">
+                        <div class="not-found-icon">😕</div>
+                        <h3>Sonuç bulunamadı</h3>
+                        <p>"${escapeHtml(query)}" için eşleşme yok</p>
+                        <div class="add-suggestion">
+                            <p>📝 Bu kelimeyi sözlüğe eklemek ister misiniz?</p>
+                            <button class="btn btn-success mt-20" onclick="quickAdd('${escapeHtml(query)}')">
+                                ➕ Ekle
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = results.map(w => `
+                <div class="result-card">
+                    <div class="result-arabic" dir="rtl">${escapeHtml(w.arabic)}</div>
+                    <div class="result-turkish">${escapeHtml(w.turkish)}</div>
+                    <div class="result-actions">
+                        <button class="btn-small btn-primary" onclick="speak('${escapeHtml(w.arabic)}')">
+                            🔊 Dinle
+                        </button>
+                        <button class="btn-small btn-success" onclick="copyText('${escapeHtml(w.arabic)}')">
+                            📋 Kopyala
+                        </button>
+                        <button class="btn-small btn-warning" onclick="editWord(${w.id})">
+                            ✏️ Düzenle
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('quickHistory');
+            if (searchHistory.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = '<span style="color:#666;font-size:0.9em;">Son aramalar:</span> ' + 
+                searchHistory.map(h => `
+                    <button class="history-tag" onclick="setSearchInput('${escapeHtml(h)}')">${escapeHtml(h)}</button>
+                `).join('');
+        }
+
+        function setSearchInput(text) {
+            document.getElementById('dictInput').value = text;
+            searchDictionary();
+        }
+
+        function quickAdd(query) {
+            if (searchMode === 'tr-to-ar') {
+                document.getElementById('manualTurkish').value = query;
+                document.getElementById('manualArabic').focus();
+            } else {
+                document.getElementById('manualArabic').value = query;
+                document.getElementById('manualTurkish').focus();
+            }
+            showSection('ocr');
+            showToast('Bilgileri doldurup ekleyin', 'success');
+        }
+
+        // ==================== CRUD OPERATIONS ====================
+
+        function addManual() {
+            const arabic = document.getElementById('manualArabic').value.trim();
+            const turkish = document.getElementById('manualTurkish').value.trim();
+            
+            if (!arabic || !turkish) {
+                showToast('Her iki alanı da doldurun', 'error');
+                return;
+            }
+            
+            addWord(arabic, turkish);
+            
+            document.getElementById('manualArabic').value = '';
+            document.getElementById('manualTurkish').value = '';
+        }
+
+        function addWord(arabic, turkish) {
+            // Check duplicate
+            const exists = dictionary.some(w => 
+                w.arabic === arabic && w.turkish === turkish
+            );
+            
+            if (exists) {
+                showToast('Bu kelime zaten var!', 'error');
+                return;
+            }
+            
+            const word = {
+                id: Date.now(),
+                arabic,
+                turkish,
+                date: new Date().toISOString()
+            };
+            
+            dictionary.push(word);
+            saveDictionary();
+            renderWordList();
+            showToast('Sözlüğe eklendi!', 'success');
+            
+            // Refresh search if active
+            const query = document.getElementById('dictInput').value;
+            if (query) searchDictionary();
+        }
+
+        function editWord(id) {
+            const word = dictionary.find(w => w.id === id);
+            if (!word) return;
+            
+            editingId = id;
+            document.getElementById('editArabic').value = word.arabic;
+            document.getElementById('editTurkish').value = word.turkish;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function saveEdit() {
+            if (!editingId) return;
+            
+            const arabic = document.getElementById('editArabic').value.trim();
+            const turkish = document.getElementById('editTurkish').value.trim();
+            
+            if (!arabic || !turkish) {
+                showToast('Alanlar boş olamaz', 'error');
+                return;
+            }
+            
+            const word = dictionary.find(w => w.id === editingId);
+            if (word) {
+                word.arabic = arabic;
+                word.turkish = turkish;
+                saveDictionary();
+                renderWordList();
+                closeModal();
+                
+                // Refresh search
+                const query = document.getElementById('dictInput').value;
+                if (query) searchDictionary();
+                
+                showToast('Güncellendi!', 'success');
+            }
+        }
+
+        function deleteWord(id) {
+            if (!confirm('Silmek istediğinize emin misiniz?')) return;
+            
+            dictionary = dictionary.filter(w => w.id !== id);
+            saveDictionary();
+            renderWordList();
+            
+            const query = document.getElementById('dictInput').value;
+            if (query) searchDictionary();
+            
+            showToast('Silindi', 'success');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingId = null;
+        }
+
+        // ==================== OCR FUNCTIONS ====================
+
+        function handleFile(event) {
             const file = event.target.files[0];
             if (file) processImage(file);
         }
 
-        // Drag and drop
-        const dropZone = document.getElementById('dropZone');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        async function processImage(file) {
+            const preview = document.getElementById('ocrPreview');
+            const progress = document.createElement('div');
+            progress.innerHTML = '<div class="spinner"></div><p style="text-align:center;">İşleniyor...</p>';
+            preview.parentNode.insertBefore(progress, preview);
+            
+            try {
+                const result = await Tesseract.recognize(file, 'ara', {
+                    logger: m => console.log(m)
+                });
+                
+                progress.remove();
+                
+                const lines = result.data.text
+                    .split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l.length > 2);
+                
+                if (lines.length === 0) {
+                    showToast('Metin bulunamadı', 'error');
+                    return;
+                }
+                
+                showOCRPreview(lines);
+                
+            } catch (err) {
+                progress.remove();
+                showToast('OCR hatası: ' + err.message, 'error');
+            }
         }
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-        });
+        function showOCRPreview(lines) {
+            ocrLines = lines;
+            selectedOCR.clear();
+            
+            const container = document.getElementById('ocrLines');
+            container.innerHTML = lines.map((line, idx) => {
+                const isArabic = /[\u0600-\u06FF]/.test(line);
+                return `
+                    <div class="ocr-line" onclick="toggleOCRLine(${idx})" data-idx="${idx}">
+                        <span>${isArabic ? '🔤' : '📝'}</span>
+                        <span dir="${isArabic ? 'rtl' : 'ltr'}">${escapeHtml(line)}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('ocrPreview').style.display = 'block';
+        }
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-        });
+        function toggleOCRLine(idx) {
+            const el = document.querySelector(`[data-idx="${idx}"]`);
+            if (selectedOCR.has(idx)) {
+                selectedOCR.delete(idx);
+                el.classList.remove('selected');
+            } else {
+                selectedOCR.add(idx);
+                el.classList.add('selected');
+            }
+        }
 
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length) processImage(files[0]);
-        });
+        function addSelectedOCR() {
+            const indices = Array.from(selectedOCR).sort((a, b) => a - b);
+            let added = 0;
+            
+            for (let i = 0; i < indices.length; i++) {
+                const idx = indices[i];
+                const line = ocrLines[idx];
+                
+                if (/[\u0600-\u06FF]/.test(line)) {
+                    const arabic = line.match(/[\u0600-\u06FF\s]+/g)?.join(' ').trim() || line;
+                    let turkish = '';
+                    
+                    // Look for Turkish meaning in next line
+                    if (i + 1 < indices.length) {
+                        const nextIdx = indices[i + 1];
+                        const nextLine = ocrLines[nextIdx];
+                        if (!/[\u0600-\u06FF]/.test(nextLine)) {
+                            turkish = nextLine;
+                            i++;
+                        }
+                    }
+                    
+                    addWord(arabic, turkish || 'Anlam ekleyin...');
+                    added++;
+                }
+            }
+            
+            if (added > 0) {
+                skipOCR();
+                showToast(`${added} kelime eklendi!`, 'success');
+            }
+        }
 
-        // Camera
+        function skipOCR() {
+            document.getElementById('ocrPreview').style.display = 'none';
+            ocrLines = [];
+            selectedOCR.clear();
+        }
+
+        // Camera functions
         async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
-                });
-                const video = document.getElementById('video');
-                video.srcObject = stream;
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                document.getElementById('video').srcObject = stream;
                 document.getElementById('cameraContainer').style.display = 'block';
-                document.getElementById('dropZone').style.display = 'none';
             } catch (err) {
-                showToast('Kamera erişimi reddedildi: ' + err.message, 'error');
+                showToast('Kamera hatası: ' + err.message, 'error');
             }
         }
 
         function stopCamera() {
             if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+                stream.getTracks().forEach(t => t.stop());
                 stream = null;
             }
             document.getElementById('cameraContainer').style.display = 'none';
-            document.getElementById('dropZone').style.display = 'block';
         }
 
         function capturePhoto() {
@@ -1037,505 +1354,135 @@
             canvas.getContext('2d').drawImage(video, 0, 0);
             
             canvas.toBlob(blob => {
-                processImage(new File([blob], "camera.jpg", { type: "image/jpeg" }));
-            }, 'image/jpeg');
+                processImage(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+            });
             
             stopCamera();
         }
 
-        // ==================== OCR PROCESSING ====================
-        async function processImage(file) {
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            
-            progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-            
-            try {
-                // Use Tesseract with error handling
-                const result = await Tesseract.recognize(
-                    file,
-                    'ara',
-                    {
-                        logger: m => {
-                            if (m.status === 'recognizing text') {
-                                const pct = Math.round(m.progress * 100);
-                                progressBar.style.width = pct + '%';
-                                progressBar.textContent = pct + '%';
-                                progressText.textContent = `İşleniyor... ${m.status}`;
-                            }
-                        }
-                    }
-                );
+        // ==================== UI FUNCTIONS ====================
 
-                progressContainer.style.display = 'none';
-                
-                // Parse OCR results
-                const lines = result.data.text
-                    .split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l.length > 0);
-                
-                if (lines.length === 0) {
-                    showToast('Metin bulunamadı, manuel ekleyin', 'error');
-                    return;
+        function showSection(section) {
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                item.classList.remove('active');
+                if ((section === 'ocr' && idx === 0) || 
+                    (section === 'list' && idx === 1) || 
+                    (section === 'data' && idx === 2)) {
+                    item.classList.add('active');
                 }
-
-                // Show OCR preview for selection
-                showOCRPreview(lines);
-                
-            } catch (error) {
-                progressContainer.style.display = 'none';
-                console.error('OCR Error:', error);
-                showToast('OCR hatası: ' + error.message, 'error');
-            }
+            });
+            
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section-${section}`).classList.add('active');
+            
+            if (section === 'list') renderWordList();
         }
 
-        function showOCRPreview(lines) {
-            ocrResults = lines;
-            selectedOCRLines.clear();
-            
-            const container = document.getElementById('ocrLines');
-            container.innerHTML = lines.map((line, idx) => {
-                const hasArabic = /[\u0600-\u06FF]/.test(line);
-                const icon = hasArabic ? '🔤' : '📝';
-                return `
-                    <div class="ocr-line ${hasArabic ? 'arabic-line' : ''}" 
-                         onclick="toggleOCRLine(${idx})" 
-                         data-idx="${idx}">
-                        <span>${icon}</span> ${escapeHtml(line)}
-                    </div>
-                `;
-            }).join('');
-            
-            document.getElementById('ocrPreview').style.display = 'block';
-        }
-
-        function toggleOCRLine(idx) {
-            const element = document.querySelector(`[data-idx="${idx}"]`);
-            if (selectedOCRLines.has(idx)) {
-                selectedOCRLines.delete(idx);
-                element.classList.remove('selected');
-            } else {
-                selectedOCRLines.add(idx);
-                element.classList.add('selected');
-            }
-        }
-
-        function addSelectedLines() {
-            const indices = Array.from(selectedOCRLines).sort((a, b) => a - b);
-            let added = 0;
-            
-            for (let i = 0; i < indices.length; i++) {
-                const idx = indices[i];
-                const line = ocrResults[idx];
-                
-                // Try to find corresponding Turkish line
-                let arabic = '';
-                let turkish = '';
-                
-                if (/[\u0600-\u06FF]/.test(line)) {
-                    arabic = line.match(/[\u0600-\u06FF\s]+/g)?.join(' ').trim() || line;
-                    // Check next line for Turkish
-                    if (i + 1 < indices.length) {
-                        const nextLine = ocrResults[indices[i + 1]];
-                        if (!/[\u0600-\u06FF]/.test(nextLine)) {
-                            turkish = nextLine;
-                            i++; // Skip next line
-                        }
-                    }
-                }
-                
-                if (arabic) {
-                    addWord(arabic, turkish || 'Anlam ekleyin...');
-                    added++;
-                }
-            }
-            
-            if (added > 0) {
-                showToast(`${added} kelime eklendi!`, 'success');
-                skipOCR();
-                showSection('list');
-            }
-        }
-
-        function skipOCR() {
-            document.getElementById('ocrPreview').style.display = 'none';
-            ocrResults = [];
-            selectedOCRLines.clear();
-        }
-
-        // ==================== CRUD OPERATIONS ====================
-        function addWord(arabic, turkish) {
-            const word = {
-                id: Date.now() + Math.random(),
-                arabic: arabic.trim(),
-                turkish: turkish.trim(),
-                date: new Date().toISOString(),
-                reviewCount: 0,
-                correctCount: 0
-            };
-            
-            words.push(word);
-            saveWords();
-            updateStats();
-            return word;
-        }
-
-        function addManualWord() {
-            const arabic = document.getElementById('manualArabic').value.trim();
-            const turkish = document.getElementById('manualTurkish').value.trim();
-            
-            if (!arabic) {
-                showToast('Arapça kelime girin', 'error');
-                return;
-            }
-            
-            addWord(arabic, turkish || 'Anlam ekleyin...');
-            showToast('Kelime eklendi!', 'success');
-            
-            // Clear inputs
-            document.getElementById('manualArabic').value = '';
-            document.getElementById('manualTurkish').value = '';
-        }
-
-        function deleteWord(id) {
-            if (!confirm('Bu kelimeyi silmek istediğinize emin misiniz?')) return;
-            
-            words = words.filter(w => w.id !== id);
-            saveWords();
-            renderWords();
-            updateStats();
-            showToast('Kelime silindi', 'success');
-        }
-
-        function editWord(id) {
-            const word = words.find(w => w.id === id);
-            if (!word) return;
-            
-            currentEditId = id;
-            document.getElementById('editArabic').value = word.arabic;
-            document.getElementById('editTurkish').value = word.turkish;
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        function saveEdit() {
-            if (!currentEditId) return;
-            
-            const arabic = document.getElementById('editArabic').value.trim();
-            const turkish = document.getElementById('editTurkish').value.trim();
-            
-            if (!arabic) {
-                showToast('Arapça kelime boş olamaz', 'error');
-                return;
-            }
-            
-            const word = words.find(w => w.id === currentEditId);
-            if (word) {
-                word.arabic = arabic;
-                word.turkish = turkish;
-                saveWords();
-                renderWords();
-                closeModal();
-                showToast('Güncellendi!', 'success');
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('editModal').classList.remove('active');
-            currentEditId = null;
-        }
-
-        // ==================== RENDERING ====================
-        function renderWords(filteredWords = null) {
-            const displayWords = filteredWords || words;
+        function renderWordList() {
             const container = document.getElementById('wordList');
-            const emptyState = document.getElementById('emptyState');
-            const wordsCard = document.getElementById('wordsCard');
+            const empty = document.getElementById('emptyList');
+            const count = document.getElementById('wordCount');
             
-            if (displayWords.length === 0) {
+            count.textContent = dictionary.length;
+            
+            if (dictionary.length === 0) {
                 container.innerHTML = '';
-                emptyState.style.display = 'block';
-                wordsCard.style.display = 'none';
+                empty.style.display = 'block';
                 return;
             }
             
-            emptyState.style.display = 'none';
-            wordsCard.style.display = 'block';
+            empty.style.display = 'none';
             
-            // Sort by date (newest first)
-            const sorted = [...displayWords].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sorted = [...dictionary].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
             
-            container.innerHTML = sorted.map(word => `
+            container.innerHTML = sorted.map(w => `
                 <div class="word-item">
-                    <div class="word-content">
-                        <div class="word-arabic">${escapeHtml(word.arabic)}</div>
-                        <div class="word-turkish">${escapeHtml(word.turkish)}</div>
-                        <div class="word-meta">
-                            📅 ${formatDate(word.date)} | 
-                            🎯 ${word.correctCount}/${word.reviewCount} doğru
-                        </div>
+                    <div>
+                        <div class="word-arabic" dir="rtl">${escapeHtml(w.arabic)}</div>
+                        <div class="word-turkish">${escapeHtml(w.turkish)}</div>
                     </div>
                     <div class="word-actions">
-                        <button class="btn-icon btn-edit" onclick="editWord(${word.id})">✏️</button>
-                        <button class="btn-icon btn-delete" onclick="deleteWord(${word.id})">🗑️</button>
+                        <button class="btn-icon" style="background:#3498db;color:white;" onclick="editWord(${w.id})">✏️</button>
+                        <button class="btn-icon" style="background:#e74c3c;color:white;" onclick="deleteWord(${w.id})">🗑️</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function searchWords() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            if (!query) {
-                renderWords();
-                return;
-            }
-            
-            const filtered = words.filter(w => 
-                w.arabic.toLowerCase().includes(query) || 
-                w.turkish.toLowerCase().includes(query)
-            );
-            renderWords(filtered);
-        }
-
-        function filterWords(type) {
-            // Update active tag
-            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            let filtered = words;
-            const now = new Date();
-            
-            if (type === 'today') {
-                const today = now.toDateString();
-                filtered = words.filter(w => new Date(w.date).toDateString() === today);
-            } else if (type === 'week') {
-                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-                filtered = words.filter(w => new Date(w.date) >= weekAgo);
-            }
-            
-            renderWords(filtered);
-        }
-
-        // ==================== QUIZ ====================
-        function startQuiz() {
-            if (words.length < 4) {
-                showToast('Quiz için en az 4 kelime gerekli', 'error');
-                return;
-            }
-            
-            quizStats = { correct: 0, total: 0 };
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            // Select random word
-            const word = words[Math.floor(Math.random() * words.length)];
-            quizCurrent = word;
-            
-            // Generate options (1 correct, 3 wrong)
-            const options = [word];
-            const otherWords = words.filter(w => w.id !== word.id);
-            
-            while (options.length < 4 && otherWords.length > 0) {
-                const idx = Math.floor(Math.random() * otherWords.length);
-                options.push(otherWords.splice(idx, 1)[0]);
-            }
-            
-            // Shuffle options
-            options.sort(() => Math.random() - 0.5);
-            
-            // Render quiz
-            const card = document.getElementById('quizCard');
-            card.innerHTML = `
-                <div style="margin-bottom:20px;">
-                    <span style="background:var(--primary);color:white;padding:5px 15px;border-radius:20px;font-size:0.9em;">
-                        Soru ${quizStats.total + 1}
-                    </span>
-                </div>
-                <div class="quiz-arabic">${escapeHtml(word.arabic)}</div>
-                <p style="color:#666;margin-bottom:20px;">Anlamı nedir?</p>
-                <div class="quiz-options">
-                    ${options.map(opt => `
-                        <button class="quiz-option" onclick="checkAnswer(${opt.id})">
-                            ${escapeHtml(opt.turkish)}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function checkAnswer(selectedId) {
-            const buttons = document.querySelectorAll('.quiz-option');
-            const correct = selectedId === quizCurrent.id;
-            
-            buttons.forEach((btn, idx) => {
-                const optId = quizCurrent.id === quizCurrent.id ? quizCurrent.id : words.find(w => w.turkish === btn.textContent.trim())?.id;
-                if (btn.textContent.trim() === quizCurrent.turkish) {
-                    btn.classList.add('correct');
-                } else if (!correct && btn.onclick.toString().includes(selectedId)) {
-                    btn.classList.add('wrong');
-                }
-                btn.onclick = null;
-            });
-            
-            // Update stats
-            quizCurrent.reviewCount++;
-            if (correct) {
-                quizCurrent.correctCount++;
-                quizStats.correct++;
-            }
-            quizStats.total++;
-            saveWords();
-            
-            // Show next button
-            setTimeout(() => {
-                const card = document.getElementById('quizCard');
-                const isLast = quizStats.total >= 10;
-                card.innerHTML += `
-                    <button class="btn btn-success" onclick="${isLast ? 'endQuiz()' : 'nextQuestion()'}" 
-                            style="margin-top:20px;width:100%;">
-                        ${isLast ? '🏁 Bitir' : '➡️ Sonraki'}
-                    </button>
-                `;
-            }, 1000);
-        }
-
-        function endQuiz() {
-            const percentage = Math.round((quizStats.correct / quizStats.total) * 100);
-            document.getElementById('quizScore').textContent = percentage + '%';
-            
-            const card = document.getElementById('quizCard');
-            card.innerHTML = `
-                <h2>🎉 Quiz Tamamlandı!</h2>
-                <div style="font-size:4em;margin:20px;">${percentage >= 80 ? '🏆' : percentage >= 50 ? '👍' : '💪'}</div>
-                <p style="font-size:1.3em;color:var(--dark);">
-                    ${quizStats.correct} / ${quizStats.total} doğru
-                </p>
-                <p style="color:#666;margin:20px;">Başarı: %${percentage}</p>
-                <button class="btn btn-success" onclick="startQuiz()">🔄 Tekrar Başla</button>
-                <button class="btn" onclick="showSection('list')">📋 Listeye Dön</button>
-            `;
-        }
-
         // ==================== DATA MANAGEMENT ====================
-        function saveWords() {
-            localStorage.setItem('tefsirWords', JSON.stringify(words));
-            updateStats();
+
+        function saveDictionary() {
+            localStorage.setItem('tefsirDictionary', JSON.stringify(dictionary));
         }
 
-        function updateStats() {
-            document.getElementById('totalCount').textContent = words.length;
-            
-            const today = new Date().toDateString();
-            const todayWords = words.filter(w => new Date(w.date).toDateString() === today);
-            document.getElementById('todayCount').textContent = todayWords.length;
-            
-            // Calculate overall accuracy
-            const totalReviews = words.reduce((sum, w) => sum + w.reviewCount, 0);
-            const totalCorrect = words.reduce((sum, w) => sum + w.correctCount, 0);
-            const accuracy = totalReviews > 0 ? Math.round((totalCorrect / totalReviews) * 100) : 0;
-            document.getElementById('quizScore').textContent = accuracy + '%';
+        function exportData() {
+            const data = JSON.stringify(dictionary, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sozluk_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('İndirildi!', 'success');
         }
 
-        function updateJSONPreview() {
-            document.getElementById('jsonPreview').textContent = JSON.stringify(words, null, 2);
-        }
-
-        function exportJSON() {
-            const data = JSON.stringify(words, null, 2);
-            downloadFile(data, `tefsir_kelimeler_${formatDateFile()}.json`, 'application/json');
-            showToast('JSON indirildi!', 'success');
-        }
-
-        function exportCSV() {
-            const csv = [
-                ['Arapça', 'Türkçe', 'Tarih', 'Doğru', 'Toplam'],
-                ...words.map(w => [
-                    w.arabic,
-                    w.turkish,
-                    formatDate(w.date),
-                    w.correctCount,
-                    w.reviewCount
-                ])
-            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-            
-            downloadFile(csv, `tefsir_kelimeler_${formatDateFile()}.csv`, 'text/csv');
-            showToast('CSV indirildi!', 'success');
-        }
-
-        function importFile(event) {
+        function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    if (file.name.endsWith('.json')) {
-                        const data = JSON.parse(e.target.result);
-                        if (Array.isArray(data)) {
-                            words = [...words, ...data];
-                            saveWords();
-                            renderWords();
-                            updateJSONPreview();
-                            showToast(`${data.length} kelime içe aktarıldı!`, 'success');
-                        }
-                    } else if (file.name.endsWith('.csv')) {
-                        // Simple CSV parse
-                        const lines = e.target.result.split('\n').slice(1);
-                        let count = 0;
-                        lines.forEach(line => {
-                            const cols = line.split(',').map(c => c.replace(/"/g, '').trim());
-                            if (cols[0] && cols[1]) {
-                                addWord(cols[0], cols[1]);
-                                count++;
-                            }
-                        });
-                        showToast(`${count} kelime içe aktarıldı!`, 'success');
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                        dictionary = [...dictionary, ...data];
+                        saveDictionary();
+                        renderWordList();
+                        showToast(`${data.length} kelime yüklendi!`, 'success');
                     }
                 } catch (err) {
-                    showToast('Dosya okunamadı: ' + err.message, 'error');
+                    showToast('Geçersiz dosya', 'error');
                 }
             };
             reader.readAsText(file);
         }
 
-        function clearAllData() {
-            if (!confirm('⚠️ TÜM veriler silinecek! Emin misiniz?')) return;
-            if (!confirm('Son kez soruyorum: Tüm kelimeler silinsin mi?')) return;
+        function clearAll() {
+            if (!confirm('TÜM sözlük silinecek! Emin misiniz?')) return;
+            if (!confirm('Son uyarı: Bu işlem geri alınamaz!')) return;
             
-            words = [];
-            localStorage.removeItem('tefsirWords');
-            saveWords();
-            renderWords();
-            updateJSONPreview();
-            showToast('Tüm veriler silindi', 'success');
+            dictionary = [];
+            saveDictionary();
+            renderWordList();
+            showToast('Sözlük temizlendi', 'success');
         }
 
         // ==================== UTILITIES ====================
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA';
+                speechSynthesis.speak(utterance);
+            } else {
+                showToast('Ses özelliği desteklenmiyor', 'error');
+            }
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Kopyalandı!', 'success');
+            });
+        }
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = 'toast ' + type;
+            toast.style.background = type === 'error' ? 'var(--danger)' : 'var(--success)';
             toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         function escapeHtml(text) {
@@ -1544,31 +1491,22 @@
             return div.innerHTML;
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('tr-TR', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
-
-        function formatDateFile() {
-            return new Date().toISOString().split('T')[0];
-        }
-
+        // ==================== INIT ====================
+        
         // Close modal on outside click
         document.getElementById('editModal').addEventListener('click', (e) => {
             if (e.target.id === 'editModal') closeModal();
         });
 
-        // Prevent zoom on double tap (mobile)
+        // Initialize
+        renderHistory();
+        renderWordList();
+
+        // Prevent zoom on double tap
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
-            }
+            if (now - lastTouchEnd <= 300) e.preventDefault();
             lastTouchEnd = now;
         }, false);
     </script>

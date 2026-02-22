@@ -6,54 +6,715 @@
     <title>Arapça Tefsir Kelime Öğrenme</title>
     <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { text-align: center; color: white; margin-bottom: 30px; font-size: 2em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .upload-area { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-bottom: 20px; border: 3px dashed #667eea; }
-        .upload-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; border-radius: 50px; cursor: pointer; display: inline-block; font-size: 1.1em; margin: 10px; }
-        .word-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 20px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #667eea; }
-        .arabic-word { font-size: 2em; color: #2c3e50; font-weight: bold; }
-        .turkish-meaning { color: #555; font-size: 1.1em; flex: 1; margin: 0 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .upload-area {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            border: 3px dashed #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            transform: translateY(-5px);
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #f0f4ff;
+            border-color: #764ba2;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            display: none;
+            margin: 10px auto;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .progress {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .results {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .word-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+            border-right: 5px solid #667eea;
+        }
+
+        .word-card:hover {
+            transform: translateX(-10px);
+        }
+
+        .arabic-word {
+            font-size: 2em;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .turkish-meaning {
+            color: #555;
+            font-size: 1.1em;
+            text-align: left;
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        .json-output {
+            background: #2c3e50;
+            color: #2ecc71;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 20px;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .manual-input {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            min-width: 200px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .save-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Arapça Tefsir Kelime Öğrenme</h1>
-        <div class="upload-area" id="dropZone">
-            <h2>Resim Yükle</h2>
-            <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)" style="display:none">
-            <label for="fileInput" class="upload-btn">📁 Dosya Seç</label>
-            <button class="upload-btn" onclick="startCamera()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">📷 Kamera</button>
-        </div>
-        <div id="wordList"></div>
-    </div>
-        <script>
-        let words = JSON.parse(localStorage.getItem('tefsirKelimeler')) || [];
         
-        function handleFile(e) {
-            const file = e.target.files[0];
-            Tesseract.recognize(file, 'ara+tur').then(result => {
-                const lines = result.data.text.split('\n').filter(l => l.trim());
-                for (let line of lines) {
-                    if (/[\u0600-\u06FF]/.test(line)) {
-                        let ar = line.replace(/[^\u0600-\u06FF\s]/g, '').trim();
-                        let tr = line.replace(/[\u0600-\u06FF]/g, '').trim();
-                        if (ar && tr) words.push({arabic: ar, turkish: tr});
+        <div class="stats" id="stats">
+            Toplam Kelime: <strong id="totalWords">0</strong>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('upload')">📷 Resimden Oku</div>
+            <div class="tab" onclick="showTab('manual')">✏️ Manuel Ekle</div>
+            <div class="tab" onclick="showTab('list')">📋 Kelimelerim</div>
+            <div class="tab" onclick="showTab('json')">💾 JSON İndir</div>
+        </div>
+
+        <!-- Upload Section -->
+        <div id="upload" class="section active">
+            <div class="upload-area" id="dropZone">
+                <h2>Resim Yükle veya Sürükle</h2>
+                <p>Arapça kelimelerin olduğu sayfanın fotoğrafını çekin veya yükleyin</p>
+                <br>
+                <label for="fileInput" class="upload-btn">📁 Dosya Seç</label>
+                <button class="upload-btn camera-btn" onclick="startCamera()">📷 Kamera</button>
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+                <br><br>
+                <video id="video" autoplay></video>
+                <canvas id="canvas"></canvas>
+                <br>
+                <button class="upload-btn" id="captureBtn" style="display:none" onclick="capturePhoto()">📸 Fotoğraf Çek</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>OCR işleniyor... Lütfen bekleyin</p>
+            </div>
+
+            <div class="progress" id="progress">
+                <p>İşleniyor...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Input Section -->
+        <div id="manual" class="section">
+            <div class="manual-input">
+                <h3>✏️ Yeni Kelime Ekle</h3>
+                <div class="input-group">
+                    <input type="text" id="arabicInput" placeholder="Arapça kelime (مثال)" dir="rtl">
+                    <input type="text" id="turkishInput" placeholder="Türkçe anlamı">
+                    <button class="add-btn" onclick="addManualWord()">➕ Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div id="list" class="section">
+            <div class="results" id="results" style="display: block;">
+                <h3>📋 Kelime Listesi</h3>
+                <div id="wordList"></div>
+            </div>
+        </div>
+
+        <!-- JSON Section -->
+        <div id="json" class="section">
+            <div class="results" style="display: block;">
+                <h3>💾 JSON Verisi</h3>
+                <div class="json-output" id="jsonOutput">[]</div>
+                <button class="download-btn" onclick="downloadJSON()">⬇️ JSON İndir</button>
+                <button class="download-btn" onclick="loadFromJSON()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 10px;">📁 JSON Yükle</button>
+                <input type="file" id="jsonInput" accept=".json" style="display:none" onchange="handleJSONFile(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="edit-modal" id="editModal">
+        <div class="modal-content">
+            <h3>✏️ Kelimeyi Düzenle</h3>
+            <input type="text" id="editArabic" placeholder="Arapça" dir="rtl">
+            <input type="text" id="editTurkish" placeholder="Türkçe anlamı">
+            <div class="modal-actions">
+                <button class="save-btn" onclick="saveEdit()">💾 Kaydet</button>
+                <button class="cancel-btn" onclick="closeModal()">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let words = JSON.parse(localStorage.getItem('tefsirKelimeler')) || [];
+        let currentEditIndex = -1;
+        let stream = null;
+
+        // Initialize
+        updateDisplay();
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'list') renderWordList();
+            if (tabName === 'json') updateJSON();
+        }
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) processImage(files[0]);
+        });
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) processImage(file);
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('captureBtn').style.display = 'inline-block';
+            } catch (err) {
+                alert('Kamera erişimi reddedildi veya desteklenmiyor');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                processImage(new File([blob], "camera.jpg", { type: "image/jpeg" }));
+            });
+            
+            // Stop camera
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'none';
+        }
+
+        async function processImage(file) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('progress').style.display = 'block';
+            
+            const imageUrl = URL.createObjectURL(file);
+            
+            try {
+                const result = await Tesseract.recognize(
+                    imageUrl,
+                    'ara+tur', // Arapça + Türkçe
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                const progress = Math.round(m.progress * 100);
+                                document.getElementById('progressFill').style.width = progress + '%';
+                                document.getElementById('progressFill').textContent = progress + '%';
+                            }
+                        }
+                    }
+                );
+                
+                parseAndAddWords(result.data.text);
+                
+            } catch (error) {
+                alert('OCR hatası: ' + error.message);
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('progress').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function parseAndAddWords(text) {
+            // Basit parsing - satırları böl
+            const lines = text.split('\n').filter(line => line.trim());
+            const newWords = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                // Arapça karakter içeren satırları bul
+                if (/[\u0600-\u06FF]/.test(line)) {
+                    // Sonraki satır Türkçe olabilir veya aynı satırda olabilir
+                    let arabic = line.replace(/[^\u0600-\u06FF\s]/g, '').trim();
+                    let turkish = line.replace(/[\u0600-\u06FF]/g, '').trim();
+                    
+                    if (!turkish && i + 1 < lines.length) {
+                        turkish = lines[i + 1].trim();
+                        i++;
+                    }
+                    
+                    if (arabic && turkish) {
+                        newWords.push({ arabic, turkish, id: Date.now() + Math.random() });
                     }
                 }
-                localStorage.setItem('tefsirKelimeler', JSON.stringify(words));
-                render();
-            });
+            }
+            
+            if (newWords.length > 0) {
+                words = [...words, ...newWords];
+                saveWords();
+                alert(`${newWords.length} kelime eklendi!`);
+                showTab('list');
+            } else {
+                alert('Kelime bulunamadı. Lütfen manuel ekleyin.');
+            }
         }
-        
-        function render() {
-            document.getElementById('wordList').innerHTML = words.map(w => 
-                `<div class="word-card"><div class="arabic-word">${w.arabic}</div><div class="turkish-meaning">${w.turkish}</div></div>`
-            ).join('');
+
+        function addManualWord() {
+            const arabic = document.getElementById('arabicInput').value.trim();
+            const turkish = document.getElementById('turkishInput').value.trim();
+            
+            if (arabic && turkish) {
+                words.push({
+                    id: Date.now(),
+                    arabic: arabic,
+                    turkish: turkish
+                });
+                saveWords();
+                document.getElementById('arabicInput').value = '';
+                document.getElementById('turkishInput').value = '';
+                alert('Kelime eklendi!');
+            } else {
+                alert('Her iki alanı da doldurun');
+            }
         }
-        
-        render();
+
+        function deleteWord(index) {
+            words.splice(index, 1);
+            saveWords();
+            renderWordList();
+        }
+
+        function editWord(index) {
+            currentEditIndex = index;
+            document.getElementById('editArabic').value = words[index].arabic;
+            document.getElementById('editTurkish').value = words[index].turkish;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function saveEdit() {
+            if (currentEditIndex > -1) {
+                words[currentEditIndex].arabic = document.getElementById('editArabic').value;
+                words[currentEditIndex].turkish = document.getElementById('editTurkish').value;
+                saveWords();
+                closeModal();
+                renderWordList();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditIndex = -1;
+        }
+
+        function renderWordList() {
+            const container = document.getElementById('wordList');
+            if (words.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#999;">Henüz kelime eklenmemiş</p>';
+                return;
+            }
+            
+            container.innerHTML = words.map((word, index) => `
+                <div class="word-card">
+                    <div class="arabic-word">${word.arabic}</div>
+                    <div class="turkish-meaning">${word.turkish}</div>
+                    <div class="actions">
+                        <button class="btn btn-edit" onclick="editWord(${index})">✏️</button>
+                        <button class="btn btn-delete" onclick="deleteWord(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateJSON() {
+            document.getElementById('jsonOutput').textContent = JSON.stringify(words, null, 2);
+        }
+
+        function downloadJSON() {
+            const dataStr = JSON.stringify(words, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tefsir_kelimeler_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function loadFromJSON() {
+            document.getElementById('jsonInput').click();
+        }
+
+        function handleJSONFile(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loaded = JSON.parse(e.target.result);
+                    if (Array.isArray(loaded)) {
+                        words = loaded;
+                        saveWords();
+                        alert('JSON yüklendi!');
+                        updateJSON();
+                    }
+                } catch (err) {
+                    alert('Geçersiz JSON dosyası');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveWords() {
+            localStorage.setItem('tefsirKelimeler', JSON.stringify(words));
+            document.getElementById('totalWords').textContent = words.length;
+        }
+
+        function updateDisplay() {
+            document.getElementById('totalWords').textContent = words.length;
+        }
+
+        // Close modal on outside click
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') closeModal();
+        });
     </script>
 </body>
 </html>

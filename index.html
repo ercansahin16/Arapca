@@ -2,153 +2,1010 @@
 <html lang="tr" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arapça Tefsir Kelime Öğrenme</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <title>📚 Arapça Tefsir - Kelime Öğrenme</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
-    <!-- Tesseract.js v4 - Daha stabil -->
-    <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQXJhcMOnYSBUZWZzaXIiLCJzaG9ydF9uYW1lIjoiVGVmc2lyIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiM2NjdlZWEiLCJ0aGVtZV9jb2xvciI6IiM2NjdlZWEifQ==">
+    <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { text-align: center; color: white; margin-bottom: 30px; font-size: 2em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .upload-area { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-bottom: 20px; border: 3px dashed #667eea; }
-        .upload-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; border-radius: 50px; cursor: pointer; display: inline-block; font-size: 1.1em; margin: 10px; border: none; }
-        .word-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 20px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #667eea; }
-        .arabic-word { font-size: 2em; color: #2c3e50; font-weight: bold; text-align: right; }
-        .turkish-meaning { color: #555; font-size: 1.1em; flex: 1; margin: 0 20px; text-align: left; }
-        .loading { display: none; text-align: center; color: white; margin: 20px; }
-        .error { background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin: 10px; display: none; }
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #11998e;
+            --danger: #fc466b;
+            --warning: #f093fb;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --shadow: 0 10px 40px rgba(0,0,0,0.2);
+            --radius: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            color: var(--dark);
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            text-align: center;
+            font-size: 1.5em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 15px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-tab i {
+            font-size: 1.5em;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Upload Area */
+        .upload-zone {
+            border: 3px dashed var(--primary);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--secondary);
+            background: #e8ecff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #38ef7d);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #3f5efb);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #f5576c);
+        }
+
+        /* Camera */
+        .camera-container {
+            position: relative;
+            display: none;
+            margin-top: 20px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 150px;
+            border: 2px solid white;
+            border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.arabic {
+            font-size: 1.5em;
+            text-align: right;
+            direction: rtl;
+        }
+
+        /* Word Cards */
+        .word-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .word-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: center;
+            transition: all 0.3s;
+            border-right: 5px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .word-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .word-arabic {
+            font-size: 2em;
+            color: var(--dark);
+            font-weight: bold;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .word-turkish {
+            color: #666;
+            font-size: 1.1em;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .word-meta {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .word-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-edit { background: #3498db; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Progress */
+        .progress-container {
+            display: none;
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 99;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s;
+            color: #999;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-item i {
+            display: block;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .nav-item span {
+            font-size: 0.75em;
+        }
+
+        /* JSON Output */
+        .json-preview {
+            background: #2c3e50;
+            color: #2ecc71;
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            box-shadow: var(--shadow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        /* Filter Tags */
+        .filter-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.9em;
+        }
+
+        .tag.active {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .word-item {
+                grid-template-columns: 1fr;
+            }
+            
+            .word-actions {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* OCR Preview */
+        .ocr-preview {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .ocr-line {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+        }
+
+        .ocr-line:hover {
+            border-right-color: var(--primary);
+            background: #e8ecff;
+        }
+
+        .ocr-line.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Quiz Mode */
+        .quiz-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quiz-arabic {
+            font-size: 3em;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .quiz-option {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--success);
+        }
+
+        .quiz-option.wrong {
+            background: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        /* Hide file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Selection color */
+        ::selection {
+            background: var(--primary);
+            color: white;
+        }
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <h1>📚 Arapça Tefsir Öğrenme</h1>
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Toplam Kelime</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="todayCount">0</div>
+                <div class="stat-label">Bugün Eklenen</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="quizScore">0%</div>
+                <div class="stat-label">Quiz Başarısı</div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>📚 Arapça Tefsir Kelime Öğrenme</h1>
+        <!-- Search (sadece liste görünümünde) -->
+        <div class="search-box" id="searchContainer" style="display:none;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Kelime ara..." oninput="searchWords()">
+        </div>
+
+        <!-- Filter Tags -->
+        <div class="filter-tags" id="filterContainer" style="display:none;">
+            <button class="tag active" onclick="filterWords('all')">Tümü</button>
+            <button class="tag" onclick="filterWords('today')">Bugün</button>
+            <button class="tag" onclick="filterWords('week')">Bu Hafta</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-container" id="progressContainer">
+            <h3>🔄 Görüntü İşleniyor...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            <p id="progressText">Lütfen bekleyin...</p>
+        </div>
+
+        <!-- Sections -->
         
-        <div class="upload-area" id="dropZone">
-            <h2>Resim Yükle</h2>
-            <p>Arapça kelimelerin olduğu sayfanın fotoğrafını seçin</p>
-            <br>
-            <input type="file" id="fileInput" accept="image/*" style="display:none">
-            <label for="fileInput" class="upload-btn">📁 Dosya Seç</label>
-            <button class="upload-btn" onclick="startCamera()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">📷 Kamera</button>
-            <br><br>
-            <video id="video" style="display:none; width:100%; max-width:300px; border-radius:10px;" autoplay playsinline></video>
-            <br>
-            <button class="upload-btn" id="captureBtn" style="display:none;" onclick="capturePhoto()">📸 Çek</button>
+        <!-- 1. OCR / Upload Section -->
+        <div class="section active" id="section-upload">
+            <div class="card">
+                <h2 class="card-title">📷 Resimden Kelime Ekle</h2>
+                
+                <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📸</div>
+                    <h3>Fotoğraf Yükle</h3>
+                    <p>veya sürükle-bırak yapın</p>
+                    <br>
+                    <button class="btn" onclick="event.stopPropagation()">📁 Dosya Seç</button>
+                    <button class="btn btn-warning" onclick="event.stopPropagation(); startCamera()">📷 Kamera</button>
+                </div>
+
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+
+                <!-- Camera -->
+                <div class="camera-container" id="cameraContainer">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="camera-overlay"></div>
+                    <br>
+                    <button class="btn btn-success" onclick="capturePhoto()">📸 Fotoğraf Çek</button>
+                    <button class="btn btn-danger" onclick="stopCamera()">❌ İptal</button>
+                </div>
+
+                <!-- OCR Preview -->
+                <div class="ocr-preview" id="ocrPreview" style="display:none;">
+                    <h4>🔍 Tespit Edilen Metinler:</h4>
+                    <p style="color:#666; font-size:0.9em; margin-bottom:10px;">Doğru satırları seçin:</p>
+                    <div id="ocrLines"></div>
+                    <br>
+                    <button class="btn btn-success" onclick="addSelectedLines()">✅ Seçilenleri Ekle</button>
+                    <button class="btn" onclick="skipOCR()">⏭️ Atla</button>
+                </div>
+            </div>
+
+            <!-- Manual Add -->
+            <div class="card">
+                <h2 class="card-title">✏️ Manuel Ekle</h2>
+                <div class="form-group">
+                    <label class="form-label">Arapça Kelime</label>
+                    <input type="text" class="form-input arabic" id="manualArabic" placeholder="مثال" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Türkçe Anlamı</label>
+                    <input type="text" class="form-input" id="manualTurkish" placeholder="örnek, misal">
+                </div>
+                <button class="btn btn-success" onclick="addManualWord()" style="width:100%; justify-content:center;">
+                    ➕ Kelime Ekle
+                </button>
+            </div>
         </div>
 
-        <div class="loading" id="loading">
-            <h3>⏳ OCR İşleniyor...</h3>
-            <p>Lütfen bekleyin, bu biraz zaman alabilir</p>
+        <!-- 2. List Section -->
+        <div class="section" id="section-list">
+            <div class="card" id="wordsCard">
+                <h2 class="card-title">📋 Kelimelerim</h2>
+                <div class="word-grid" id="wordList">
+                    <!-- Words will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <h3>Henüz kelime eklenmemiş</h3>
+                <p>Yukarıdan kelime eklemeye başlayın</p>
+            </div>
         </div>
 
-        <div class="error" id="error"></div>
+        <!-- 3. Quiz Section -->
+        <div class="section" id="section-quiz">
+            <div class="quiz-card" id="quizCard">
+                <h2>🎯 Quiz Modu</h2>
+                <p style="color:#666; margin:20px;">Öğrendiğin kelimeleri test et!</p>
+                <button class="btn btn-success" onclick="startQuiz()" style="font-size:1.2em; padding:15px 40px;">
+                    🚀 Başla
+                </button>
+            </div>
+        </div>
 
-        <div id="wordList"></div>
+        <!-- 4. JSON/Data Section -->
+        <div class="section" id="section-data">
+            <div class="card">
+                <h2 class="card-title">💾 Veri Yönetimi</h2>
+                
+                <h4 style="margin:20px 0 10px;">📤 Dışa Aktar</h4>
+                <button class="btn" onclick="exportJSON()">⬇️ JSON İndir</button>
+                <button class="btn btn-success" onclick="exportCSV()">📊 CSV İndir</button>
+                
+                <h4 style="margin:20px 0 10px;">📥 İçe Aktar</h4>
+                <input type="file" id="importInput" accept=".json,.csv" onchange="importFile(event)">
+                <button class="btn btn-warning" onclick="document.getElementById('importInput').click()">📁 Dosya Yükle</button>
+                
+                <h4 style="margin:20px 0 10px;">⚠️ Tehlikeli Bölge</h4>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Tüm Verileri Sil</button>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📄 JSON Önizleme</h2>
+                <div class="json-preview" id="jsonPreview">[]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Kelimeyi Düzenle</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Arapça</label>
+                    <input type="text" class="form-input arabic" id="editArabic" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Türkçe Anlamı</label>
+                    <input type="text" class="form-input" id="editTurkish">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">İptal</button>
+                <button class="btn btn-success" onclick="saveEdit()">💾 Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('upload')">
+            <span>📷</span>
+            <span>Ekle</span>
+        </div>
+        <div class="nav-item" onclick="showSection('list')">
+            <span>📋</span>
+            <span>Listem</span>
+        </div>
+        <div class="nav-item" onclick="showSection('quiz')">
+            <span>🎯</span>
+            <span>Quiz</span>
+        </div>
+        <div class="nav-item" onclick="showSection('data')">
+            <span>💾</span>
+            <span>Veri</span>
+        </div>
     </div>
 
     <script>
-        let words = JSON.parse(localStorage.getItem('tefsirKelimeler')) || [];
+        // ==================== STATE MANAGEMENT ====================
+        let words = JSON.parse(localStorage.getItem('tefsirWords')) || [];
+        let currentEditId = null;
+        let ocrResults = [];
+        let selectedOCRLines = new Set();
         let stream = null;
+        let quizCurrent = null;
+        let quizStats = { correct: 0, total: 0 };
 
-        // Dosya seçme
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) processImage(file);
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            renderWords();
+            updateJSONPreview();
+            
+            // Check for today count
+            const today = new Date().toDateString();
+            const todayWords = words.filter(w => new Date(w.date).toDateString() === today);
+            document.getElementById('todayCount').textContent = todayWords.length;
         });
 
-        async function processImage(file) {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-            
-            try {
-                // Tesseract v4 syntax - createWorker kullanmadan doğrudan recognize
-                const result = await Tesseract.recognize(
-                    file,
-                    'ara', // Sadece Arapça (Türkçe karakterler sorun çıkarabilir)
-                    {
-                        logger: m => console.log(m)
-                    }
-                );
-                
-                console.log('OCR Sonucu:', result);
-                parseText(result.data.text);
-                
-            } catch (err) {
-                console.error('OCR Hatası:', err);
-                showError('OCR hatası: ' + err.message);
-            }
-            
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function parseText(text) {
-            console.log('Ham metin:', text);
-            const lines = text.split('\n').filter(l => l.trim());
-            let count = 0;
-            
-            for (let line of lines) {
-                // Arapça karakter var mı kontrol et
-                if (/[\u0600-\u06FF]/.test(line)) {
-                    // Arapça ve Latin karakterleri ayır
-                    const arabic = line.match(/[\u0600-\u06FF\s]+/g);
-                    const latin = line.match(/[a-zA-ZğüşıöçĞÜŞİÖÇ\s,;]+/g);
-                    
-                    if (arabic) {
-                        const arText = arabic.join(' ').trim();
-                        const trText = latin ? latin.join(' ').trim() : '';
-                        
-                        if (arText) {
-                            words.push({
-                                id: Date.now() + Math.random(),
-                                arabic: arText,
-                                turkish: trText || 'Anlam ekleyin...'
-                            });
-                            count++;
-                        }
-                    }
+        // ==================== NAVIGATION ====================
+        function showSection(section) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                item.classList.remove('active');
+                if ((section === 'upload' && idx === 0) ||
+                    (section === 'list' && idx === 1) ||
+                    (section === 'quiz' && idx === 2) ||
+                    (section === 'data' && idx === 3)) {
+                    item.classList.add('active');
                 }
-            }
+            });
+
+            // Update sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section-${section}`).classList.add('active');
+
+            // Show/hide search
+            const searchContainer = document.getElementById('searchContainer');
+            const filterContainer = document.getElementById('filterContainer');
             
-            if (count > 0) {
-                localStorage.setItem('tefsirKelimeler', JSON.stringify(words));
-                render();
-                alert(`${count} kelime bulundu!`);
+            if (section === 'list') {
+                searchContainer.style.display = 'block';
+                filterContainer.style.display = 'flex';
+                renderWords();
             } else {
-                showError('Kelime bulunamadı. Lütfen daha net bir fotoğraf çekin.');
+                searchContainer.style.display = 'none';
+                filterContainer.style.display = 'none';
+            }
+
+            // Update data preview
+            if (section === 'data') {
+                updateJSONPreview();
             }
         }
 
-        function render() {
-            const container = document.getElementById('wordList');
-            if (words.length === 0) {
-                container.innerHTML = '<p style="text-align:center;color:white;">Henüz kelime yok</p>';
-                return;
-            }
-            
-            container.innerHTML = words.map((w, i) => 
-                `<div class="word-card">
-                    <div class="arabic-word">${w.arabic}</div>
-                    <div class="turkish-meaning">${w.turkish}</div>
-                    <button onclick="deleteWord(${i})" style="background:#e74c3c;color:white;border:none;padding:8px 15px;border-radius:20px;cursor:pointer;">🗑️</button>
-                </div>`
-            ).join('');
+        // ==================== FILE & CAMERA HANDLING ====================
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) processImage(file);
         }
 
-        function deleteWord(index) {
-            words.splice(index, 1);
-            localStorage.setItem('tefsirKelimeler', JSON.stringify(words));
-            render();
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
 
-        function showError(msg) {
-            const err = document.getElementById('error');
-            err.textContent = msg;
-            err.style.display = 'block';
-        }
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
 
-        // Kamera fonksiyonları
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) processImage(files[0]);
+        });
+
+        // Camera
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -156,11 +1013,20 @@
                 });
                 const video = document.getElementById('video');
                 video.srcObject = stream;
-                video.style.display = 'block';
-                document.getElementById('captureBtn').style.display = 'inline-block';
+                document.getElementById('cameraContainer').style.display = 'block';
+                document.getElementById('dropZone').style.display = 'none';
             } catch (err) {
-                showError('Kamera erişimi reddedildi: ' + err.message);
+                showToast('Kamera erişimi reddedildi: ' + err.message, 'error');
             }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('cameraContainer').style.display = 'none';
+            document.getElementById('dropZone').style.display = 'block';
         }
 
         function capturePhoto() {
@@ -171,19 +1037,540 @@
             canvas.getContext('2d').drawImage(video, 0, 0);
             
             canvas.toBlob(blob => {
-                processImage(new File([blob], "photo.jpg", { type: "image/jpeg" }));
-            });
+                processImage(new File([blob], "camera.jpg", { type: "image/jpeg" }));
+            }, 'image/jpeg');
             
-            // Kamerayı kapat
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            video.style.display = 'none';
-            document.getElementById('captureBtn').style.display = 'none';
+            stopCamera();
         }
 
-        // İlk render
-        render();
+        // ==================== OCR PROCESSING ====================
+        async function processImage(file) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            
+            try {
+                // Use Tesseract with error handling
+                const result = await Tesseract.recognize(
+                    file,
+                    'ara',
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                const pct = Math.round(m.progress * 100);
+                                progressBar.style.width = pct + '%';
+                                progressBar.textContent = pct + '%';
+                                progressText.textContent = `İşleniyor... ${m.status}`;
+                            }
+                        }
+                    }
+                );
+
+                progressContainer.style.display = 'none';
+                
+                // Parse OCR results
+                const lines = result.data.text
+                    .split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l.length > 0);
+                
+                if (lines.length === 0) {
+                    showToast('Metin bulunamadı, manuel ekleyin', 'error');
+                    return;
+                }
+
+                // Show OCR preview for selection
+                showOCRPreview(lines);
+                
+            } catch (error) {
+                progressContainer.style.display = 'none';
+                console.error('OCR Error:', error);
+                showToast('OCR hatası: ' + error.message, 'error');
+            }
+        }
+
+        function showOCRPreview(lines) {
+            ocrResults = lines;
+            selectedOCRLines.clear();
+            
+            const container = document.getElementById('ocrLines');
+            container.innerHTML = lines.map((line, idx) => {
+                const hasArabic = /[\u0600-\u06FF]/.test(line);
+                const icon = hasArabic ? '🔤' : '📝';
+                return `
+                    <div class="ocr-line ${hasArabic ? 'arabic-line' : ''}" 
+                         onclick="toggleOCRLine(${idx})" 
+                         data-idx="${idx}">
+                        <span>${icon}</span> ${escapeHtml(line)}
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('ocrPreview').style.display = 'block';
+        }
+
+        function toggleOCRLine(idx) {
+            const element = document.querySelector(`[data-idx="${idx}"]`);
+            if (selectedOCRLines.has(idx)) {
+                selectedOCRLines.delete(idx);
+                element.classList.remove('selected');
+            } else {
+                selectedOCRLines.add(idx);
+                element.classList.add('selected');
+            }
+        }
+
+        function addSelectedLines() {
+            const indices = Array.from(selectedOCRLines).sort((a, b) => a - b);
+            let added = 0;
+            
+            for (let i = 0; i < indices.length; i++) {
+                const idx = indices[i];
+                const line = ocrResults[idx];
+                
+                // Try to find corresponding Turkish line
+                let arabic = '';
+                let turkish = '';
+                
+                if (/[\u0600-\u06FF]/.test(line)) {
+                    arabic = line.match(/[\u0600-\u06FF\s]+/g)?.join(' ').trim() || line;
+                    // Check next line for Turkish
+                    if (i + 1 < indices.length) {
+                        const nextLine = ocrResults[indices[i + 1]];
+                        if (!/[\u0600-\u06FF]/.test(nextLine)) {
+                            turkish = nextLine;
+                            i++; // Skip next line
+                        }
+                    }
+                }
+                
+                if (arabic) {
+                    addWord(arabic, turkish || 'Anlam ekleyin...');
+                    added++;
+                }
+            }
+            
+            if (added > 0) {
+                showToast(`${added} kelime eklendi!`, 'success');
+                skipOCR();
+                showSection('list');
+            }
+        }
+
+        function skipOCR() {
+            document.getElementById('ocrPreview').style.display = 'none';
+            ocrResults = [];
+            selectedOCRLines.clear();
+        }
+
+        // ==================== CRUD OPERATIONS ====================
+        function addWord(arabic, turkish) {
+            const word = {
+                id: Date.now() + Math.random(),
+                arabic: arabic.trim(),
+                turkish: turkish.trim(),
+                date: new Date().toISOString(),
+                reviewCount: 0,
+                correctCount: 0
+            };
+            
+            words.push(word);
+            saveWords();
+            updateStats();
+            return word;
+        }
+
+        function addManualWord() {
+            const arabic = document.getElementById('manualArabic').value.trim();
+            const turkish = document.getElementById('manualTurkish').value.trim();
+            
+            if (!arabic) {
+                showToast('Arapça kelime girin', 'error');
+                return;
+            }
+            
+            addWord(arabic, turkish || 'Anlam ekleyin...');
+            showToast('Kelime eklendi!', 'success');
+            
+            // Clear inputs
+            document.getElementById('manualArabic').value = '';
+            document.getElementById('manualTurkish').value = '';
+        }
+
+        function deleteWord(id) {
+            if (!confirm('Bu kelimeyi silmek istediğinize emin misiniz?')) return;
+            
+            words = words.filter(w => w.id !== id);
+            saveWords();
+            renderWords();
+            updateStats();
+            showToast('Kelime silindi', 'success');
+        }
+
+        function editWord(id) {
+            const word = words.find(w => w.id === id);
+            if (!word) return;
+            
+            currentEditId = id;
+            document.getElementById('editArabic').value = word.arabic;
+            document.getElementById('editTurkish').value = word.turkish;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function saveEdit() {
+            if (!currentEditId) return;
+            
+            const arabic = document.getElementById('editArabic').value.trim();
+            const turkish = document.getElementById('editTurkish').value.trim();
+            
+            if (!arabic) {
+                showToast('Arapça kelime boş olamaz', 'error');
+                return;
+            }
+            
+            const word = words.find(w => w.id === currentEditId);
+            if (word) {
+                word.arabic = arabic;
+                word.turkish = turkish;
+                saveWords();
+                renderWords();
+                closeModal();
+                showToast('Güncellendi!', 'success');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        // ==================== RENDERING ====================
+        function renderWords(filteredWords = null) {
+            const displayWords = filteredWords || words;
+            const container = document.getElementById('wordList');
+            const emptyState = document.getElementById('emptyState');
+            const wordsCard = document.getElementById('wordsCard');
+            
+            if (displayWords.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                wordsCard.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            wordsCard.style.display = 'block';
+            
+            // Sort by date (newest first)
+            const sorted = [...displayWords].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = sorted.map(word => `
+                <div class="word-item">
+                    <div class="word-content">
+                        <div class="word-arabic">${escapeHtml(word.arabic)}</div>
+                        <div class="word-turkish">${escapeHtml(word.turkish)}</div>
+                        <div class="word-meta">
+                            📅 ${formatDate(word.date)} | 
+                            🎯 ${word.correctCount}/${word.reviewCount} doğru
+                        </div>
+                    </div>
+                    <div class="word-actions">
+                        <button class="btn-icon btn-edit" onclick="editWord(${word.id})">✏️</button>
+                        <button class="btn-icon btn-delete" onclick="deleteWord(${word.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchWords() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) {
+                renderWords();
+                return;
+            }
+            
+            const filtered = words.filter(w => 
+                w.arabic.toLowerCase().includes(query) || 
+                w.turkish.toLowerCase().includes(query)
+            );
+            renderWords(filtered);
+        }
+
+        function filterWords(type) {
+            // Update active tag
+            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let filtered = words;
+            const now = new Date();
+            
+            if (type === 'today') {
+                const today = now.toDateString();
+                filtered = words.filter(w => new Date(w.date).toDateString() === today);
+            } else if (type === 'week') {
+                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                filtered = words.filter(w => new Date(w.date) >= weekAgo);
+            }
+            
+            renderWords(filtered);
+        }
+
+        // ==================== QUIZ ====================
+        function startQuiz() {
+            if (words.length < 4) {
+                showToast('Quiz için en az 4 kelime gerekli', 'error');
+                return;
+            }
+            
+            quizStats = { correct: 0, total: 0 };
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            // Select random word
+            const word = words[Math.floor(Math.random() * words.length)];
+            quizCurrent = word;
+            
+            // Generate options (1 correct, 3 wrong)
+            const options = [word];
+            const otherWords = words.filter(w => w.id !== word.id);
+            
+            while (options.length < 4 && otherWords.length > 0) {
+                const idx = Math.floor(Math.random() * otherWords.length);
+                options.push(otherWords.splice(idx, 1)[0]);
+            }
+            
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            // Render quiz
+            const card = document.getElementById('quizCard');
+            card.innerHTML = `
+                <div style="margin-bottom:20px;">
+                    <span style="background:var(--primary);color:white;padding:5px 15px;border-radius:20px;font-size:0.9em;">
+                        Soru ${quizStats.total + 1}
+                    </span>
+                </div>
+                <div class="quiz-arabic">${escapeHtml(word.arabic)}</div>
+                <p style="color:#666;margin-bottom:20px;">Anlamı nedir?</p>
+                <div class="quiz-options">
+                    ${options.map(opt => `
+                        <button class="quiz-option" onclick="checkAnswer(${opt.id})">
+                            ${escapeHtml(opt.turkish)}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedId) {
+            const buttons = document.querySelectorAll('.quiz-option');
+            const correct = selectedId === quizCurrent.id;
+            
+            buttons.forEach((btn, idx) => {
+                const optId = quizCurrent.id === quizCurrent.id ? quizCurrent.id : words.find(w => w.turkish === btn.textContent.trim())?.id;
+                if (btn.textContent.trim() === quizCurrent.turkish) {
+                    btn.classList.add('correct');
+                } else if (!correct && btn.onclick.toString().includes(selectedId)) {
+                    btn.classList.add('wrong');
+                }
+                btn.onclick = null;
+            });
+            
+            // Update stats
+            quizCurrent.reviewCount++;
+            if (correct) {
+                quizCurrent.correctCount++;
+                quizStats.correct++;
+            }
+            quizStats.total++;
+            saveWords();
+            
+            // Show next button
+            setTimeout(() => {
+                const card = document.getElementById('quizCard');
+                const isLast = quizStats.total >= 10;
+                card.innerHTML += `
+                    <button class="btn btn-success" onclick="${isLast ? 'endQuiz()' : 'nextQuestion()'}" 
+                            style="margin-top:20px;width:100%;">
+                        ${isLast ? '🏁 Bitir' : '➡️ Sonraki'}
+                    </button>
+                `;
+            }, 1000);
+        }
+
+        function endQuiz() {
+            const percentage = Math.round((quizStats.correct / quizStats.total) * 100);
+            document.getElementById('quizScore').textContent = percentage + '%';
+            
+            const card = document.getElementById('quizCard');
+            card.innerHTML = `
+                <h2>🎉 Quiz Tamamlandı!</h2>
+                <div style="font-size:4em;margin:20px;">${percentage >= 80 ? '🏆' : percentage >= 50 ? '👍' : '💪'}</div>
+                <p style="font-size:1.3em;color:var(--dark);">
+                    ${quizStats.correct} / ${quizStats.total} doğru
+                </p>
+                <p style="color:#666;margin:20px;">Başarı: %${percentage}</p>
+                <button class="btn btn-success" onclick="startQuiz()">🔄 Tekrar Başla</button>
+                <button class="btn" onclick="showSection('list')">📋 Listeye Dön</button>
+            `;
+        }
+
+        // ==================== DATA MANAGEMENT ====================
+        function saveWords() {
+            localStorage.setItem('tefsirWords', JSON.stringify(words));
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = words.length;
+            
+            const today = new Date().toDateString();
+            const todayWords = words.filter(w => new Date(w.date).toDateString() === today);
+            document.getElementById('todayCount').textContent = todayWords.length;
+            
+            // Calculate overall accuracy
+            const totalReviews = words.reduce((sum, w) => sum + w.reviewCount, 0);
+            const totalCorrect = words.reduce((sum, w) => sum + w.correctCount, 0);
+            const accuracy = totalReviews > 0 ? Math.round((totalCorrect / totalReviews) * 100) : 0;
+            document.getElementById('quizScore').textContent = accuracy + '%';
+        }
+
+        function updateJSONPreview() {
+            document.getElementById('jsonPreview').textContent = JSON.stringify(words, null, 2);
+        }
+
+        function exportJSON() {
+            const data = JSON.stringify(words, null, 2);
+            downloadFile(data, `tefsir_kelimeler_${formatDateFile()}.json`, 'application/json');
+            showToast('JSON indirildi!', 'success');
+        }
+
+        function exportCSV() {
+            const csv = [
+                ['Arapça', 'Türkçe', 'Tarih', 'Doğru', 'Toplam'],
+                ...words.map(w => [
+                    w.arabic,
+                    w.turkish,
+                    formatDate(w.date),
+                    w.correctCount,
+                    w.reviewCount
+                ])
+            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            
+            downloadFile(csv, `tefsir_kelimeler_${formatDateFile()}.csv`, 'text/csv');
+            showToast('CSV indirildi!', 'success');
+        }
+
+        function importFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const data = JSON.parse(e.target.result);
+                        if (Array.isArray(data)) {
+                            words = [...words, ...data];
+                            saveWords();
+                            renderWords();
+                            updateJSONPreview();
+                            showToast(`${data.length} kelime içe aktarıldı!`, 'success');
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        // Simple CSV parse
+                        const lines = e.target.result.split('\n').slice(1);
+                        let count = 0;
+                        lines.forEach(line => {
+                            const cols = line.split(',').map(c => c.replace(/"/g, '').trim());
+                            if (cols[0] && cols[1]) {
+                                addWord(cols[0], cols[1]);
+                                count++;
+                            }
+                        });
+                        showToast(`${count} kelime içe aktarıldı!`, 'success');
+                    }
+                } catch (err) {
+                    showToast('Dosya okunamadı: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (!confirm('⚠️ TÜM veriler silinecek! Emin misiniz?')) return;
+            if (!confirm('Son kez soruyorum: Tüm kelimeler silinsin mi?')) return;
+            
+            words = [];
+            localStorage.removeItem('tefsirWords');
+            saveWords();
+            renderWords();
+            updateJSONPreview();
+            showToast('Tüm veriler silindi', 'success');
+        }
+
+        // ==================== UTILITIES ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function formatDateFile() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        // Close modal on outside click
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') closeModal();
+        });
+
+        // Prevent zoom on double tap (mobile)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
     </script>
 </body>
 </html>

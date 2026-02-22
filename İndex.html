@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arapça Tefsir Kelime Öğrenme</title>
+    <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; color: white; margin-bottom: 30px; font-size: 2em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .upload-area { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-bottom: 20px; border: 3px dashed #667eea; }
+        .upload-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; border-radius: 50px; cursor: pointer; display: inline-block; font-size: 1.1em; margin: 10px; }
+        .word-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 20px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #667eea; }
+        .arabic-word { font-size: 2em; color: #2c3e50; font-weight: bold; }
+        .turkish-meaning { color: #555; font-size: 1.1em; flex: 1; margin: 0 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Arapça Tefsir Kelime Öğrenme</h1>
+        <div class="upload-area" id="dropZone">
+            <h2>Resim Yükle</h2>
+            <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)" style="display:none">
+            <label for="fileInput" class="upload-btn">📁 Dosya Seç</label>
+            <button class="upload-btn" onclick="startCamera()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">📷 Kamera</button>
+        </div>
+        <div id="wordList"></div>
+    </div>
+        <script>
+        let words = JSON.parse(localStorage.getItem('tefsirKelimeler')) || [];
+        
+        function handleFile(e) {
+            const file = e.target.files[0];
+            Tesseract.recognize(file, 'ara+tur').then(result => {
+                const lines = result.data.text.split('\n').filter(l => l.trim());
+                for (let line of lines) {
+                    if (/[\u0600-\u06FF]/.test(line)) {
+                        let ar = line.replace(/[^\u0600-\u06FF\s]/g, '').trim();
+                        let tr = line.replace(/[\u0600-\u06FF]/g, '').trim();
+                        if (ar && tr) words.push({arabic: ar, turkish: tr});
+                    }
+                }
+                localStorage.setItem('tefsirKelimeler', JSON.stringify(words));
+                render();
+            });
+        }
+        
+        function render() {
+            document.getElementById('wordList').innerHTML = words.map(w => 
+                `<div class="word-card"><div class="arabic-word">${w.arabic}</div><div class="turkish-meaning">${w.turkish}</div></div>`
+            ).join('');
+        }
+        
+        render();
+    </script>
+</body>
+</html>
